@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+	<CustomAction
+		Id="hcf_ribbon_actions_script"
+		Location="ScriptLink"
+		ScriptSrc="~sitecollection/Style Library/Scripts/Habanero/ribbon_actions.js"
+		Sequence="20000" />
+
+	<CustomAction
+		Id="hcf_ribbon_actions"
+        Location="CommandUI.Ribbon"
+        Sequence="10">
+		<CommandUIExtension>
+			<CommandUIDefinitions>
+				<CommandUIDefinition Location="Ribbon.EditingTools.CPInsert.Content.Controls._children">
+					<FlyoutAnchor
+						  Id="Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet"
+						  Alt="Symbol"
+						  Image32by32="/_layouts/15/1033/images/formatmap32x32.png"
+						  Image32by32Top="-204"
+						  Image32by32Left="-137"
+						  LabelText="Insert Snippet"
+						  ToolTipTitle="Insert Snippet"
+						  ToolTipDescription="Inserts items from a snippets gallery as HTML code."
+						  Sequence="20"
+						  PopulateDynamically="true"
+						  PopulateOnlyOnce="true"
+						  PopulateQueryCommand="Hcf.RibbonActions.InsertHtmlSnippet.LoadSnippets"
+						  TemplateAlias="o1" />
+				</CommandUIDefinition>
+			</CommandUIDefinitions>
+		</CommandUIExtension>
+	</CustomAction>
+</Elements>
