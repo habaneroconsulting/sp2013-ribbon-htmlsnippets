@@ -220,7 +220,7 @@ Hcf.RibbonActions = Hcf.RibbonActions || {};  // Module specific namespace
 
 		// We are in edit mode if either design mode or wiki page mode are active
 		return (inDesignMode || inWikiPageMode);
-	};
+	}
 
 
 	/**
@@ -257,7 +257,7 @@ Hcf.RibbonActions = Hcf.RibbonActions || {};  // Module specific namespace
 				}, 'cui.js');
 			}, 'sp.js');
 		}
-	}
+	};
 
 	//#endregion
 
