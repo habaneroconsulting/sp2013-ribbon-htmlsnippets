@@ -7,14 +7,20 @@
 		Sequence="20000" />
 
 	<CustomAction
+		Id="hcf_ribbon_actions_init"
+		Location="ScriptLink"
+		ScriptBlock="if (Hcf) { Hcf.RibbonActions.init(); }"
+		Sequence="30000" />
+
+	<CustomAction
 		Id="hcf_ribbon_actions"
         Location="CommandUI.Ribbon"
         Sequence="10">
 		<CommandUIExtension>
-			<CommandUIDefinitions>
-				<CommandUIDefinition Location="Ribbon.EditingTools.CPInsert.Content.Controls._children">
+			<CommandUIDefinitions>	
+				<CommandUIDefinition Location="Ribbon.EditingTools.CPInsert.Embed.Controls._children">
 					<FlyoutAnchor
-						  Id="Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet"
+						  Id="Ribbon.EditingTools.CPInsert.Embed.InsertHtmlSnippet"
 						  Alt="Symbol"
 						  Image32by32="/_layouts/15/1033/images/formatmap32x32.png"
 						  Image32by32Top="-204"

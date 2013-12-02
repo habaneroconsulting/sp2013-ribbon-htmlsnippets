@@ -8,34 +8,31 @@
 /*! Habanero - Licensed under MIT */
 
 
+//#region $NAMESPACE
+
+var Hcf = Hcf || {};  // Global namespace
+Hcf.RibbonActions = Hcf.RibbonActions || {};  // Module specific namespace
+
+//#endregion
+
+
 /**
 * Ribbon Actions module
 * @namespace Hcf.RibbonActions
 */
-(function (window, document, undefined) {
+(function (Hcf, window, document, undefined) {
 	'use strict';
 
-	var snippetsData;
+	var module = Hcf.RibbonActions,
+		snippetsData = [];
 
 
 	//#region $PRIVATE METHODS
 
 	/**
-	* Initialization method
+	* Constructor
 	*/
-	function init() {
-		// Once SP and our ribbon libraries have loaded then add the HTML snippet insertion button to the ribbon
-		SP.SOD.executeOrDelayUntilScriptLoaded(function () {
-			SP.SOD.executeOrDelayUntilScriptLoaded(function () {
-				getReusableContent(function (data) {
-					if (data.length > 0) {
-						snippetsData = data;
-						addInsertHtmlSnippetAction();
-					}
-				});
-			}, 'cui.js');
-		}, 'sp.js');
-	}
+	function init() {}
 
 
 	/**
@@ -73,7 +70,8 @@
 				callback(results);  // Send results back to our callback
 			},
 			function (sender, args) {
-				console.log('Error adding ribbon action for HTML snippets:' + args.get_message());
+				console.log('Error adding ribbon action for HTML snippets: ' + args.get_message());
+				callback();
 			}
 		);
 	}
@@ -137,28 +135,41 @@
 		};
 
 		Hcf.RibbonActions.InsertHtmlSnippet.InsertSnippet = function (snippet) {
-			RTE.Cursor.get_range().replaceHtml(snippet);
+			var el = document.createElement('div'),
+				firstChild;
+
+			el.innerHTML = snippet;
+			firstChild = el.firstChild;
+
+			// Check if there is a class name. If so evaluate and remove if SharePoint added "ExternalClass" container div
+			if (firstChild.className !== undefined) {
+				if (firstChild.className.indexOf('ExternalClass') > -1) {
+					el = firstChild;
+				}
+			}
+
+			RTE.Cursor.get_range().replaceHtml(el.innerHTML);
 		};
 
 		Hcf.RibbonActions.InsertHtmlSnippet.GetAvailableSnippets = function () {
 			var sb = new Sys.StringBuilder(),
-				item;
+				snippet;
+
+			sb.append('<Menu Id=\'Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet.Menu\'>');
+			sb.append('<MenuSection Id=\'Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet.Menu.Symbols\'>');
+			sb.append('<Controls Id=\'Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet.Menu.Symbols.Controls\'>');
 
 			// If we have snippets to show then construct the flyout options (one for each snippet)
 			if (snippetsData.length > 0) {
-				sb.append('<Menu Id=\'Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet.Menu\'>');
-				sb.append('<MenuSection Id=\'Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet.Menu.Symbols\'>');
-				sb.append('<Controls Id=\'Ribbon.EditingTools.CPInsert.Content.InsertHtmlSnippet.Menu.Symbols.Controls\'>');
-
 				for (var i = 0; i < snippetsData.length; i++) {
-					item = snippetsData[i];
-					sb.append('<Button Id=\'Ribbon.EditingTools.CPInsert.Content.InsertSymbol.Menu.Bookmarks' + i + '\' LabelText=\'' + item.Title + '\' Command=\'Hcf.RibbonActions.InsertHtmlSnippet.InsertSnippet\' CommandType=\'General\' CommandValueId=\'' + htmlEscape(item.ReusableHtml) + '\' />');
+					snippet = snippetsData[i];
+					sb.append('<Button Id=\'Ribbon.EditingTools.CPInsert.Content.InsertSymbol.Menu.Bookmarks' + i + '\' LabelText=\'' + snippet.Title + '\' Command=\'Hcf.RibbonActions.InsertHtmlSnippet.InsertSnippet\' CommandType=\'General\' CommandValueId=\'' + htmlEscape(snippet.ReusableHtml) + '\' />');
 				}
-
-				sb.append('</Controls>');
-				sb.append('</MenuSection>');
-				sb.append('</Menu>');
 			}
+
+			sb.append('</Controls>');
+			sb.append('</MenuSection>');
+			sb.append('</Menu>');
 
 			return sb.toString();
 		};
@@ -176,6 +187,30 @@
 	//#region UTILITY
 
 	/**
+	* Checks if page is in edit mode
+	* @returns {boolean} Whether page is in edit mode or not
+	*/
+	function isEditMode() {
+		var elDesignMode, elWikiMode,
+			inDesignMode, inWikiPageMode;
+
+		elDesignMode = document.getElementById('MSOLayout_InDesignMode');
+		elWikiMode = document.getElementById('_wikiPageMode');
+
+		if (elDesignMode !== null) {
+			inDesignMode = (elDesignMode.value === '1');
+		}
+
+		if (elWikiMode !== null) {
+			inWikiPageMode = (elWikiMode.value === 'Edit');
+		}
+
+		// We are in edit mode if either design mode or wiki page mode are active
+		return (inDesignMode || inWikiPageMode);
+	};
+
+
+	/**
 	* Escapes HTML strings
 	* @param {string} str Html string to escape
 	*/
@@ -186,6 +221,29 @@
             .replace(/'/g, '&#39;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;');
+	}
+
+	//#endregion
+
+
+
+	//#region PUBLIC methods
+
+	module.init = function () {
+		if (isEditMode()) {
+			// Once SP and our ribbon libraries have loaded then add the HTML snippet insertion button to the ribbon
+			SP.SOD.executeOrDelayUntilScriptLoaded(function () {
+				SP.SOD.executeOrDelayUntilScriptLoaded(function () {
+					getReusableContent(
+						function (data) {
+							snippetsData = (data !== undefined) ? data : [];
+							//snippetsData = data;
+							addInsertHtmlSnippetAction();
+						}
+					);
+				}, 'cui.js');
+			}, 'sp.js');
+		}
 	}
 
 	//#endregion
