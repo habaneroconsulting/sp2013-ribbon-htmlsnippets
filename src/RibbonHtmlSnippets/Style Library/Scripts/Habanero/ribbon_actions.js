@@ -57,14 +57,27 @@ Hcf.RibbonActions = Hcf.RibbonActions || {};  // Module specific namespace
 
 		ctx.executeQueryAsync(
 			function (sender, args) {
-				var listItemEnumerator = oListItems.getEnumerator();
+				var listItemEnumerator = oListItems.getEnumerator(),
+					showInRibbon = true;
+
 				while (listItemEnumerator.moveNext()) {
 					oListItem = listItemEnumerator.get_current();
-					results.push({
-						Title: oListItem.get_item('Title'),
-						ReusableHtml: oListItem.get_item('ReusableHtml')
 
-					});
+					// Try to fetch show in ribbon column. If it exists, evaluate to check if this item is not meant to show in dropdown
+					try {
+						if (!oListItem.get_item('ShowInRibbon')) {
+							showInRibbon = false;
+						}
+					}
+					catch (ex) {}
+
+					if (showInRibbon) {
+						results.push({
+							Title: oListItem.get_item('Title'),
+							ReusableHtml: oListItem.get_item('ReusableHtml')
+
+						});
+					}
 				}
 
 				callback(results);  // Send results back to our callback
